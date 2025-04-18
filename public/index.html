@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>CPA Realtime Tracker</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flag-icons/css/flag-icons.min.css">
+  <style>
+    body { font-family: Arial, sans-serif; margin: 2rem; }
+    table { width: 100%; border-collapse: collapse; }
+    th { background: #6366f1; color: white; padding: 12px; }
+    td { padding: 10px; border-bottom: 1px solid #ddd; }
+    .fi { margin-right: 5px; box-shadow: 0 0 2px rgba(0,0,0,0.1); }
+    .ip-link { color: #3b82f6; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <h2>🔄 Realtime Conversions</h2>
+  <div id="counter">Total: 0</div>
+  <div style="overflow-x: auto;">
+    <table>
+      <thead>
+        <tr>
+          <th>Source</th>
+          <th>Country</th>
+          <th>Click ID</th>
+          <th>Payout</th>
+          <th>OS</th>
+          <th>IP</th>
+          <th>Currency</th>
+          <th>Ext Click ID</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-database.js"></script>
+  <script>
+    // Firebase Config (Ganti dengan milik Anda)
+    const firebaseConfig = {
+      apiKey: "AIzaSyABCD...",
+      databaseURL: "https://YOUR-FIREBASE-PROJECT.firebaseio.com",
+      projectId: "YOUR-PROJECT-ID",
+    };
+
+    // Inisialisasi Firebase
+    const app = firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+
+    // Realtime Listener
+    database.ref('conversions').on('child_added', (snapshot) => {
+      const data = snapshot.val();
+      const row = document.createElement('tr');
+      
+      // Format IP
+      const ip = data.ip ? data.ip.split('/').pop() : 'N/A';
+      
+      row.innerHTML = `
+        <td>${data.source}</td>
+        <td><span class="fi fi-${data.country?.toLowerCase()}"></span> ${data.country}</td>
+        <td>${data.click_id || 'N/A'}</td>
+        <td>${data.payout ? '$' + data.payout.toFixed(2) : 'N/A'}</td>
+        <td>${data.os || 'N/A'}</td>
+        <td class="ip-link" onclick="window.open('${data.ip || '#'}')">${ip}</td>
+        <td>${data.currency || 'N/A'}</td>
+        <td>${data.ext_click_id || 'N/A'}</td>
+      `;
+
+      document.getElementById('tableBody').prepend(row);
+      
+      // Update counter
+      const counter = document.getElementById('counter');
+      counter.textContent = `Total: ${document.querySelectorAll('#tableBody tr').length}`;
+    });
+  </script>
+</body>
+</html>
